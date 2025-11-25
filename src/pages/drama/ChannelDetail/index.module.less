@@ -20,6 +20,41 @@
   height: 100%;
   background-color: #000;
 
+  .tab {
+    position: absolute;
+    display: flex;
+    z-index: 111;
+    left: 50%;
+    top: 47px;
+    transform: translateX(-50%);
+    justify-content: center;
+
+    span {
+      font-weight: 500;
+      font-size: 12px;
+      text-align: center;
+      color: #fff9;
+
+      &:last-child {
+        color: #fff;
+        margin-left: 20px;
+        position: relative;
+
+        &::after {
+          content: '';
+          position: absolute;
+          left: 50%;
+          transform: translateX(-50%);
+          bottom: 0;
+          width: 16px;
+          height: 2px;
+          top: 30px;
+          background-color: #fff;
+        }
+      }
+    }
+  }
+
   .head {
     position: fixed;
     z-index: 200;
@@ -50,6 +85,20 @@
     display: flex;
     z-index: 10000;
 
+    &.isDemo {
+      bottom: 100px;
+
+      .comment {
+        span {
+          margin-top: -10px;
+        }
+
+        svg {
+          width: 40px;
+        }
+      }
+    }
+
     .btns {
       color: #fff;
       display: flex;
@@ -57,23 +106,37 @@
       align-items: center;
       justify-content: center;
 
-      .avatar {
-        border: 2px solid #fff;
-        border-radius: 50%;
-        margin-bottom: 20px;
+      .avatarContainer {
+        position: relative;
+        margin-bottom: 10px;
 
-        & > div {
-          width: 45px;
-          height: 45px;
+        .avatar {
+          border: 2px solid #fff;
           border-radius: 50%;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          overflow: hidden;
+          margin-bottom: 20px;
+          position: relative;
 
-          img {
-            width: 100%;
+          & > div {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+
+            img {
+              width: 100%;
+            }
           }
+        }
+
+        .follow {
+          position: absolute;
+          left: 50%;
+          transform: translateX(-50%);
+          top: 39px;
+          font-size: 13px;
         }
       }
 
@@ -82,7 +145,7 @@
         display: flex;
         flex-direction: column;
         justify-content: center;
-        font-size: 14px;
+        font-size: 0.14rem;
         font-weight: 400;
         line-height: 20px;
         text-align: center;
@@ -93,6 +156,10 @@
 
   .body {
     height: calc(100% - 48px);
+
+    &.isDemo {
+      height: 100%;
+    }
 
     &.isCssFullScreen {
       height: 100%;
@@ -244,4 +311,30 @@
 
 .lockAlertMask {
   backdrop-filter: blur(6px);
+}
+
+.demoContent {
+  z-index: 111;
+  position: absolute;
+  bottom: 48px;
+  left: 20px;
+
+  .title {
+    font-weight: 500;
+    font-size: 0.14rem;
+    color: #fff;
+    padding-bottom: 5px;
+  }
+
+  p {
+    font-weight: 400;
+    font-size: 0.12rem;
+    color: #ffffffe5;
+    max-width: 280px;
+    line-height: 1.5;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
 }

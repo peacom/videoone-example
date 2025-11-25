@@ -7,7 +7,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import useUrlState from '@ahooksjs/use-url-state';
 import useAxios from 'axios-hooks';
 import VideoSwiper, { RefVideoSwiper } from '@/components/videoSwiper';
-import { parseModel } from '@/utils';
+import { imgUrl, parseModel } from '@/utils';
 import IconBack from '@/assets/svgr/iconBack.svg?react';
 import IconComment from '@/assets/svgr/iconComment.svg?react';
 import IconUp from '@/assets/svgr/iconUp.svg?react';
@@ -42,6 +42,10 @@ import translate from '@/utils/translation';
 import { chunk } from 'lodash-es';
 import useMountContainer from '@/hooks/useMountContainer';
 import Image from '@/components/Image';
+import demoData from '@/assets/demo.json';
+import FollowIcon from '@/assets/svgr/follow.svg?react';
+
+const isDemo = window.location.pathname.includes('dramaDemo');
 interface ILockData {
   vid: string;
   order: number;
@@ -54,10 +58,31 @@ interface VideoControlsProps {
   onCommentClick: (e: React.MouseEvent) => void;
 }
 
-const VideoControls: React.FC<VideoControlsProps> = ({ current, onCommentClick }) => (
+const VideoControls: React.FC<VideoControlsProps & { activeIndex: number }> = ({
+  current,
+  activeIndex,
+  onCommentClick,
+}) => (
   <div>
-    <div className={styles.rightLane}>
+    <div className={classNames(styles.rightLane, { [styles.isDemo]: isDemo })} key={activeIndex}>
       <div className={styles.btns}>
+        {isDemo && (
+          <div className={styles.avatarContainer}>
+            <div className={styles.avatar}>
+              <Image
+                src={imgUrl(
+                  demoData.content[activeIndex].avatar ||
+                    '//p16-live-sg.ibyteimg.com/tos-alisg-i-j963mrpdmh/f91bdb13eb83960457760d4f0be0b1e8.png~tplv-j963mrpdmh-image.image',
+                )}
+                alt="avatar"
+              />
+            </div>
+            <span className={styles.follow}>
+              <FollowIcon />
+            </span>
+          </div>
+        )}
+
         <div className={styles.like}>
           <Like like={current.like} />
         </div>
@@ -115,7 +140,10 @@ function ChannelDetail() {
   const commentDrawerVisible = useSelector((state: RootState) => state.controls.commentDrawerVisible);
   const { getMountContainer } = useMountContainer();
 
-  const list = useSelector((state: RootState) => state.dramaDetail.list);
+  const detailList = useSelector((state: RootState) => state.dramaDetail.list);
+  const [iframeData, setIframeData] = useState<IDramaDetailListItem['video_meta'][]>([]);
+  const list = iframeData ? iframeData : detailList;
+
   const { loading } = useDramaData(urlState);
 
   const [{ data: commentsData, loading: commentLoading }, executeGetComments] = useAxios(
@@ -140,6 +168,30 @@ function ChannelDetail() {
   useEffect(() => {
     dispatch(setPlayBackRate(1));
   }, [activeIndex]);
+
+  const handleIframeMessage = (event: MessageEvent) => {
+    if (event.data.type === 'init') {
+      const { playInfoList } = event.data;
+      setIframeData(
+        (playInfoList.data || []).map((item: any, index: number) => ({
+          ...item,
+          videoModel: item as IVideoModel,
+          vid: item.Vid,
+          height: 1920,
+          width: 1080,
+          like: 24,
+          comment: 12,
+        })),
+      );
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener('message', handleIframeMessage);
+    return () => {
+      window.removeEventListener('message', handleIframeMessage);
+    };
+  }, []);
 
   const [{ data: lockData, loading: lockLoading }, executeGetDramaDetail] = useAxios(
     {
@@ -203,6 +255,9 @@ function ChannelDetail() {
   }, [activeIndex, numArrList]);
 
   useEffect(() => {
+    if (isDemo) {
+      return;
+    }
     dispatch(setDetail(current ?? {}));
 
     if (current.vid) {
@@ -305,27 +360,38 @@ function ChannelDetail() {
     findIndex > -1 && dispatch(setLockNumPageIndex(findIndex));
   };
 
-  const renderVideoPlayer = () => (
-    <VideoSwiper
-      startTime={startTime}
-      initActiveIndex={Number(activeIndex)}
-      playbackRate={playbackRate}
-      definition={definition}
-      videoDataList={list}
-      ref={videoSwiperRef}
-      changeNum={(value: number) => {
-        setActiveIndex(value);
-        videoSwiperRef.current?.onSelectClick(value);
-      }}
-      showLockPrompt={showLockPrompt}
-      onChange={index => {
-        setActiveIndex(index);
-      }}
-      otherComponent={
-        !isFullScreen && !isCssFullScreen && <VideoControls current={current} onCommentClick={handleCommentClick} />
-      }
-    />
-  );
+  const renderVideoPlayer = () =>
+    list.length > 0 ? (
+      <VideoSwiper
+        startTime={startTime}
+        initActiveIndex={Number(activeIndex)}
+        playbackRate={playbackRate}
+        definition={definition}
+        videoDataList={list}
+        ref={videoSwiperRef}
+        changeNum={(value: number) => {
+          setActiveIndex(value);
+          videoSwiperRef.current?.onSelectClick(value);
+        }}
+        showLockPrompt={showLockPrompt}
+        onChange={index => {
+          setActiveIndex(index);
+        }}
+        otherComponent={
+          <div>
+            {!isFullScreen && !isCssFullScreen && (
+              <VideoControls current={current} activeIndex={activeIndex} onCommentClick={handleCommentClick} />
+            )}
+            {isDemo && (
+              <div className={styles.demoContent}>
+                <div className={styles.title}>{demoData?.content?.[activeIndex]?.nickname}</div>
+                <p>{demoData?.content?.[activeIndex]?.title}</p>
+              </div>
+            )}
+          </div>
+        }
+      />
+    ) : null;
 
   return loading ? (
     <div className={styles.loadingWrapper}>
@@ -333,7 +399,7 @@ function ChannelDetail() {
     </div>
   ) : list.length > 0 ? (
     <div className={styles.wrap}>
-      {!isCssFullScreen && (
+      {!isCssFullScreen && !isDemo && (
         <NavBar
           backIcon={<IconBack />}
           className={styles.head}
@@ -341,11 +407,17 @@ function ChannelDetail() {
           onBack={handleBack}
         />
       )}
-      <div className={classNames(styles.body, { [styles.isCssFullScreen]: isCssFullScreen })}>
+      {isDemo && (
+        <div className={styles.tab}>
+          <span>Following</span>
+          <span>For You</span>
+        </div>
+      )}
+      <div className={classNames(styles.body, { [styles.isCssFullScreen]: isCssFullScreen, [styles.isDemo]: isDemo })}>
         {renderVideoPlayer()}
       </div>
 
-      {isFullScreen || isCssFullScreen ? null : (
+      {isFullScreen || isCssFullScreen || isDemo ? null : (
         <div className={styles.footer}>
           <div
             className={styles.button}
@@ -380,7 +452,7 @@ function ChannelDetail() {
         setCommentVisible={value => {
           dispatch(setCommentPanelVisible(value));
         }}
-        list={commentsData?.response ?? []}
+        list={isDemo ? demoData?.comments : (commentsData?.response ?? [])}
         loading={commentLoading}
       />
 

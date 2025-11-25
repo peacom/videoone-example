@@ -39,7 +39,6 @@ const Comment: React.FC<IProps> = ({
   const [likeMap, setLikeMap] = useState<Map<number, boolean>>(new Map());
   const [list, setList] = useState<IComment[]>(propList ?? []);
   const { getMountContainer } = useMountContainer();
-
   useEffect(() => {
     if (propList?.length > 0) {
       setList(propList);
@@ -152,7 +151,8 @@ const CommentItem = ({
           alt="avatar"
           className={styles.img}
           src={imgUrl(
-            '//p16-live-sg.ibyteimg.com/tos-alisg-i-j963mrpdmh/f91bdb13eb83960457760d4f0be0b1e8.png~tplv-j963mrpdmh-image.image',
+            comment.avatar ||
+              '//p16-live-sg.ibyteimg.com/tos-alisg-i-j963mrpdmh/f91bdb13eb83960457760d4f0be0b1e8.png~tplv-j963mrpdmh-image.image',
           )}
         />
       </div>
