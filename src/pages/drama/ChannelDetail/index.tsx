@@ -173,7 +173,7 @@ function ChannelDetail() {
     if (event.data.type === 'init') {
       const { playInfoList } = event.data;
       setIframeData(
-        (playInfoList.data || []).map((item: any, index: number) => ({
+        (playInfoList.data || []).map((item: any) => ({
           ...item,
           videoModel: item as IVideoModel,
           vid: item.Vid,
