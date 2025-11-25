@@ -141,7 +141,7 @@ function ChannelDetail() {
   const { getMountContainer } = useMountContainer();
 
   const detailList = useSelector((state: RootState) => state.dramaDetail.list);
-  const [iframeData, setIframeData] = useState<IDramaDetailListItem['video_meta'][]>([]);
+  const [iframeData, setIframeData] = useState<IDramaDetailListItem['video_meta'][] | null>(null);
   const list = iframeData ? iframeData : detailList;
 
   const { loading } = useDramaData(urlState);
