@@ -24,6 +24,8 @@ import translate from '@/utils/translation';
 import ExpandTopPlugin from '@/plugins/expandTop';
 import SystemCover from '../systemCover';
 
+const isDemo = window.location.href.includes('dramaDemo');
+
 const getClass: (player: PlayerCore) => HTMLDivElement = (player: PlayerCore) =>
   player.root?.getElementsByClassName('xgplayer-start')[0];
 
@@ -104,6 +106,22 @@ const VideoSwiper = React.forwardRef<RefVideoSwiper, IVideoSwiperProps>(
       refEndTime.current = 0;
       refStartTime.current = new Date().valueOf();
     }, [activeIndex]);
+
+    const handleIframeMessage = (event: MessageEvent) => {
+      if (event.data.type === 'prev') {
+        swiperRef.current?.slidePrev();
+      }
+      if (event.data.type === 'next') {
+        swiperRef.current?.slideNext();
+      }
+    };
+
+    useEffect(() => {
+      window.addEventListener('message', handleIframeMessage);
+      return () => {
+        window.removeEventListener('message', handleIframeMessage);
+      };
+    }, []);
 
     /**
      * Show the mute button
@@ -317,6 +335,7 @@ const VideoSwiper = React.forwardRef<RefVideoSwiper, IVideoSwiperProps>(
           startTime,
           autoplay: !isChannel,
           enableDegradeMuteAutoplay: true,
+          ...(isDemo ? { autoplayMuted: true } : {}),
           closeVideoClick: false,
           closeVideoDblclick: true,
           videoFillMode: 'fillWidth',
@@ -335,7 +354,7 @@ const VideoSwiper = React.forwardRef<RefVideoSwiper, IVideoSwiperProps>(
             'replay',
             'playbackrate',
             'sdkDefinitionPlugin',
-          ],
+          ].concat(isDemo ? ['pc', 'progress'] : []),
           commonStyle: {
             // Background color of the completed part of the progress bar
             playedColor: '#ffffff',
@@ -500,7 +519,10 @@ const VideoSwiper = React.forwardRef<RefVideoSwiper, IVideoSwiperProps>(
 
     return (
       <div className={isChannel ? styles.recommendMain : styles.main}>
-        <div className={styles.swiperContainer} ref={wrapRef as React.MutableRefObject<HTMLDivElement>}>
+        <div
+          className={classNames(styles.swiperContainer, isDemo ? 'swiper-no-swiping' : '')}
+          ref={wrapRef as React.MutableRefObject<HTMLDivElement>}
+        >
           {videoDataList?.length > 0 && (
             <Swiper
               initialSlide={activeIndex}
@@ -612,7 +634,7 @@ const PlayContol: React.FC<IPlayControlProps> = ({
         <IconRotate />
         <span>{translate('d_full_screen')}</span>
       </div>
-      {showUnmuteBtn && !isFullScreen && (
+      {showUnmuteBtn && !isFullScreen && !isDemo && (
         <div
           className={styles.unmute}
           onClick={onUnmuteClick}
