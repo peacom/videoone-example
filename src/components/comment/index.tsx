@@ -26,6 +26,7 @@ interface IProps {
   commentVisible: boolean;
   setCommentVisible: (value: boolean) => void;
 }
+const isDemo = window.location.href.includes('dramaDemo');
 
 const Comment: React.FC<IProps> = ({
   list: propList,
@@ -92,11 +93,13 @@ const Comment: React.FC<IProps> = ({
             </div>
           ) : (
             <div className={styles.commentContent}>
-              <InputBar
-                handleEnter={val => {
-                  handleAddComment(val);
-                }}
-              />
+              {!isDemo && (
+                <InputBar
+                  handleEnter={val => {
+                    handleAddComment(val);
+                  }}
+                />
+              )}
               {list.map(comment => {
                 return (
                   <CommentItem
@@ -160,12 +163,14 @@ const CommentItem = ({
         <div className={styles.name}>{comment.name}</div>
         <div className={styles.content}>{comment.content}</div>
         <div className={styles.operation}>
-          <div className={styles.time}>{formatDateTime(new Date(comment.createTime))}</div>
-          <div className={styles.del} onClick={clickDelete}>
-            <Delete />
-            &nbsp;
-            <span>{translate('c_comment_del')}</span>
-          </div>
+          <div className={styles.time}>{formatDateTime(new Date(comment.createTime)).replace('2023', '2026')}</div>
+          {!isDemo && (
+            <div className={styles.del} onClick={clickDelete}>
+              <Delete />
+              &nbsp;
+              <span>{translate('c_comment_del')}</span>
+            </div>
+          )}
         </div>
       </div>
       <div className={cn(styles.like, { [styles.unLike]: !isLike })} onClick={clickLike}>
