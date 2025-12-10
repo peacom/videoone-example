@@ -144,7 +144,11 @@ function ChannelDetail() {
   const [iframeData, setIframeData] = useState<IDramaDetailListItem['video_meta'][] | null>(null);
   const list = iframeData ? iframeData : detailList;
 
-  const { loading } = useDramaData(urlState);
+  let loading;
+  if (!isDemo) {
+    const { loading: _loading } = useDramaData(urlState);
+    loading = _loading;
+  }
 
   const [{ data: commentsData, loading: commentLoading }, executeGetComments] = useAxios(
     {
@@ -208,6 +212,7 @@ function ChannelDetail() {
     if (!lockData?.response) {
       return;
     }
+    debugger;
 
     // Re-fetch data and cache
     executeGetDramaList(
