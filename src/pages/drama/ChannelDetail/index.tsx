@@ -212,7 +212,6 @@ function ChannelDetail() {
     if (!lockData?.response) {
       return;
     }
-    debugger;
 
     // Re-fetch data and cache
     executeGetDramaList(
