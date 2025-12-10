@@ -100,10 +100,10 @@ const Comment: React.FC<IProps> = ({
                   }}
                 />
               )}
-              {list.map(comment => {
+              {list.map((comment, index) => {
                 return (
                   <CommentItem
-                    key={comment.uid}
+                    key={index}
                     comment={comment}
                     clickDelete={() => {
                       Dialog.confirm({
