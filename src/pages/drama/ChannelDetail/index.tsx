@@ -146,7 +146,7 @@ function ChannelDetail() {
 
   const detailList = useSelector((state: RootState) => state.dramaDetail.list);
   const [iframeData, setIframeData] = useState<IDramaDetailListItem['video_meta'][] | null>(null);
-  const list = iframeData ? iframeData : detailList;
+  const list = iframeData ? iframeData : detailList.filter(item => !item.vip);
 
   let loading;
   if (!isDemo) {
