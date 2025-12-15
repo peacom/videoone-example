@@ -1,6 +1,6 @@
 // Copyright (c) 2025 BytePlus Pte. Ltd.
 // SPDX-License-Identifier: Apache-2.0
-import React, { PropsWithChildren } from 'react';
+import React, { PropsWithChildren, useMemo } from 'react';
 import type { IDramaDetailListItem } from '@/interface';
 import styles from './index.module.less';
 import classNames from 'classnames';
@@ -24,7 +24,7 @@ interface ISliderItemProps extends PropsWithChildren {
 }
 
 const SliderItem: React.FC<ISliderItemProps> = ({
-  // activeIndex,
+  activeIndex,
   data,
   isChannel,
   index,
@@ -38,8 +38,9 @@ const SliderItem: React.FC<ISliderItemProps> = ({
 }) => {
   const coverUrl = data?.videoModel?.PosterUrl ?? data?.cover_url;
 
+  const isDemo = window.location.pathname.includes('dramaDemo');
   // Load two episodes from the current episode to reduce the number of DOMs
-  // const shouldRenderContent = useMemo(() => Math.abs(activeIndex - index) <= 2, [activeIndex, index]);
+  const shouldRenderContent = useMemo(() => Math.abs(activeIndex - index) <= 2, [activeIndex, index]);
 
   return (
     <div
@@ -51,29 +52,31 @@ const SliderItem: React.FC<ISliderItemProps> = ({
         [styles.isIOS]: os.isIos,
       })}
     >
-      <>
-        <div className={styles.poster}>
-          <Image src={imgUrl(coverUrl)} alt={data.name} />
-        </div>
-        <div id={`swiper-video-container-${index}`} className={styles.videoContainer} onClick={clickCallback}>
-          <div className="veplayer-cus-gradient-wrapper" />
-          <div className={styles.videoWithRotateBtn} id={`video-with-rotate-btn-${index}`}>
-            {children}
+      {(shouldRenderContent || isDemo) && (
+        <>
+          <div className={styles.poster}>
+            <Image src={imgUrl(coverUrl)} alt={data.name} />
           </div>
-        </div>
-        {data.vip && isCssFullScreen && (
-          <div
-            className={styles.back}
-            onClick={e => {
-              e.stopPropagation();
-              goBack();
-            }}
-          >
-            <IconBack />
+          <div id={`swiper-video-container-${index}`} className={styles.videoContainer} onClick={clickCallback}>
+            <div className="veplayer-cus-gradient-wrapper" />
+            <div className={styles.videoWithRotateBtn} id={`video-with-rotate-btn-${index}`}>
+              {children}
+            </div>
           </div>
-        )}
-        {otherComponent}
-      </>
+          {data.vip && isCssFullScreen && (
+            <div
+              className={styles.back}
+              onClick={e => {
+                e.stopPropagation();
+                goBack();
+              }}
+            >
+              <IconBack />
+            </div>
+          )}
+          {otherComponent}
+        </>
+      )}
     </div>
   );
 };

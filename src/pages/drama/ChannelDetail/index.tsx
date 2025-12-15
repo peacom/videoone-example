@@ -7,6 +7,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import useUrlState from '@ahooksjs/use-url-state';
 import useAxios from 'axios-hooks';
 import VideoSwiper, { RefVideoSwiper } from '@/components/videoSwiper';
+import VideoSwiperDemo from '@/components/videoSwiperDemo';
 import { imgUrl, parseModel } from '@/utils';
 import IconBack from '@/assets/svgr/iconBack.svg?react';
 import IconComment from '@/assets/svgr/iconComment.svg?react';
@@ -46,6 +47,9 @@ import demoData from '@/assets/demo.json';
 import FollowIcon from '@/assets/svgr/follow.svg?react';
 
 const isDemo = window.location.pathname.includes('dramaDemo');
+
+const VSwiper = isDemo ? VideoSwiperDemo : VideoSwiper;
+
 interface ILockData {
   vid: string;
   order: number;
@@ -366,7 +370,7 @@ function ChannelDetail() {
 
   const renderVideoPlayer = () =>
     list.length > 0 ? (
-      <VideoSwiper
+      <VSwiper
         startTime={startTime}
         initActiveIndex={Number(activeIndex)}
         playbackRate={playbackRate}
