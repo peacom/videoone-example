@@ -4,7 +4,7 @@ import styles from './index.module.less';
 import SliderItem from '@/components/sliderItem';
 import React, { useCallback, useEffect, useRef, useState, useImperativeHandle } from 'react';
 import { Swiper, SwiperClass, SwiperSlide } from 'swiper/react';
-import VePlayer, { Events, IPlayerConfig, PlayerCore } from '@/player';
+import VePlayer, { Events, IPlayerConfig } from '@/player';
 import { formatPreloadStreamList } from '@/utils/preload';
 import IconUnmute from '@/assets/svgr/iconUnmute.svg?react';
 import { Toast } from 'antd-mobile';
@@ -18,7 +18,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { setCssFullScreen, setFullScreen, setIsHorizontal, setIsPortrait } from '@/redux/actions/player';
 import { RootState } from '@/redux/type';
 import ExpandLeftPlugin from '@/plugins/expandLeft';
-import { IPreloadStream, Stream } from '@byteplus/veplayer';
+import { IPreloadStream } from '@byteplus/veplayer';
 import { setDefinition } from '@/redux/actions/controls';
 import translate from '@/utils/translation';
 import ExpandTopPlugin from '@/plugins/expandTop';
@@ -26,8 +26,8 @@ import SystemCover from '../systemCover';
 
 const isDemo = window.location.href.includes('dramaDemo');
 
-const getClass: (player: PlayerCore) => HTMLDivElement = (player: PlayerCore) =>
-  player.root?.getElementsByClassName('xgplayer-start')[0];
+// const getClass: (player: PlayerCore) => HTMLDivElement = (player: PlayerCore) =>
+//   player.root?.getElementsByClassName('xgplayer-start')[0];
 
 interface IVideoSwiperProps {
   videoDataList: IDramaDetailListItem['video_meta'][];
@@ -82,7 +82,7 @@ const VideoSwiper = React.forwardRef<RefVideoSwiper, IVideoSwiperProps>(
     const refStartTime = useRef(0);
     const refEndTime = useRef(0);
     const refNeedPause = useRef(false);
-    const [playNextStatus, setPlayNextStatus] = useState<string>('');
+    const [playNextStatus, _setPlayNextStatus] = useState<string>('');
     const [showUnmuteBtn, setShowUnmuteBtn] = useState<boolean>(false);
     const [showSystemCover, setShowSystemCover] = useState<boolean>(false);
     const [playerReady, setPlayerReady] = useState<boolean>(false);
@@ -91,7 +91,6 @@ const VideoSwiper = React.forwardRef<RefVideoSwiper, IVideoSwiperProps>(
     const isPortrait = currentVideoData.height > currentVideoData.width;
     const isFullScreen = useSelector((state: RootState) => state.player.fullScreen);
     const isCssFullScreen = useSelector((state: RootState) => state.player.cssFullScreen);
-
     refNeedPause.current = refVip.current || (!isChannelActive && isChannel);
 
     useEffect(() => {
@@ -192,107 +191,29 @@ const VideoSwiper = React.forwardRef<RefVideoSwiper, IVideoSwiperProps>(
       }
     }, [playbackRate]);
 
-    const hideStartIcon = useCallback((player?: PlayerCore) => {
-      if (!player?.root) {
-        return;
-      }
-      const startClassDom = getClass(player);
-      if (startClassDom) {
-        startClassDom.className = startClassDom.className
-          ?.split(' ')
-          .filter(item => item !== 'veplayer-h5-hide-start')
-          .join(' ');
-      }
-    }, []);
-
-    const attachStartIcon = useCallback((player: PlayerCore) => {
-      if (!player?.root) {
-        return;
-      }
-      const startClassDom = getClass(player);
-      if (startClassDom) {
-        startClassDom.className = `${startClassDom.className} veplayer-h5-hide-start`;
-      }
-    }, []);
-
-    /**
-     * Next video of the player
-     * @param {number} index - Current swiper index
-     */
-    const playNext = useCallback(
-      (index: number, vipCanPlay?: boolean) => {
-        if (index < 0 || index >= videoDataList.length) {
-          return;
-        }
-        const next = videoDataList?.[index];
-
-        // Play after VIP unlock or non-VIP video
-        if (sdkRef.current && (index !== swiperActiveRef.current || vipCanPlay)) {
-          if (os.isIos) {
-            setActiveIndex(index);
-          } else {
-            !isFullScreen && setActiveIndex(index);
-          }
-          prevSwiperActiveRef.current = swiperActiveRef.current;
-          swiperActiveRef.current = index;
-
-          if (next.vip) {
-            swiperRef.current?.slideTo(index, 0);
-            sdkRef.current?.player?.pause();
-            refVip.current = true;
-            os.isAndroid && isFullScreen && setShowSystemCover(true);
-            showLockPrompt?.();
-            return;
-          }
-          refVip.current = false;
-          setShowSystemCover(false);
-
-          setPlayNextStatus('start');
-          const nextInfo = formatPreloadStreamList([videoDataList?.[index]], definition)[0];
-          const poster = next?.videoModel?.PosterUrl ?? next.cover_url;
-          swiperRef.current?.slideTo(index, 0);
-          sdkRef.current?.player?.pause();
-          sdkRef.current?.getPlugin('poster')?.update(poster);
-          if (!nextInfo?.url) {
-            Toast.show({
-              icon: 'fail',
-              content: translate('d_data_error'),
-            });
-            return;
-          }
-          attachStartIcon(sdkRef.current?.player);
-
-          sdkRef.current
-            ?.playNext({
-              autoplay: true,
-              vid: nextInfo.vid,
-              playList: videoDataList?.[index].videoModel.PlayInfoList.map(def => ({
-                url: def.MainPlayUrl,
-                definition: def.Definition,
-                codecType: def.Codec,
-                bitrate: def.Bitrate,
-                vtype: 'MP4',
-              })) as Stream[],
-              defaultDefinition: definition,
-            })
-            .then(() => sdkRef.current?.player?.play())
-            .then(() => {
-              setTimeout(() => hideStartIcon(sdkRef.current?.player), 0);
-              setPlayNextStatus('end');
-            });
-        }
-      },
-      [attachStartIcon, hideStartIcon, videoDataList, activeIndex, isFullScreen, definition],
-    );
-
     const onSlideChange = useCallback(
       (swiper: SwiperClass) => {
         if ((isFullScreen || isCssFullScreen) && !isPortrait) return;
         if (swiper.realIndex !== swiperActiveRef.current) {
-          playNext(swiper.realIndex);
+          console.log(swiper.realIndex, '>>>');
+
+          // 销毁旧的播放器实例
+          if (sdkRef.current) {
+            sdkRef.current.destroy();
+            sdkRef.current = undefined;
+          }
+
+          // 重置播放器状态
+          setPlayerReady(false);
+          setShowUnmuteBtn(false);
+
+          // 更新索引
+          prevSwiperActiveRef.current = swiperActiveRef.current;
+          swiperActiveRef.current = swiper.realIndex;
+          setActiveIndex(swiper.realIndex);
         }
       },
-      [playNext, isFullScreen, isPortrait],
+      [isFullScreen, isCssFullScreen, isPortrait],
     );
 
     const onEnded = useCallback(() => {
@@ -301,6 +222,17 @@ const VideoSwiper = React.forwardRef<RefVideoSwiper, IVideoSwiperProps>(
           content: translate('d_data_over'),
         });
       } else {
+        // 销毁当前播放器实例
+        if (sdkRef.current) {
+          sdkRef.current.destroy();
+          sdkRef.current = undefined;
+        }
+
+        // 重置播放器状态
+        setPlayerReady(false);
+        setShowUnmuteBtn(false);
+
+        // 滑动到下一个视频
         swiperRef.current?.slideNext();
       }
     }, [videoDataList.length]);
@@ -434,12 +366,12 @@ const VideoSwiper = React.forwardRef<RefVideoSwiper, IVideoSwiperProps>(
       }
     }, [currentVideoData, isChannel, onEnded, onProgressDrag, onProgressDragend, showUnmute, startTime]);
 
-    // Initialize the player when the component is loaded
+    // Initialize the player when the component is loaded or activeIndex changes
     useEffect(() => {
       setTimeout(() => {
         initPlayer();
       });
-    }, [currentVideoData, activeIndex, initPlayer]);
+    }, [activeIndex, initPlayer]);
 
     useEffect(() => {
       // Preload only supports PC and Android
@@ -497,19 +429,44 @@ const VideoSwiper = React.forwardRef<RefVideoSwiper, IVideoSwiperProps>(
       }
     }, [isChannel, isChannelActive, isSliderMoving]);
 
-    const onSelectClick = useCallback(
-      (index: number) => {
-        playNext(index);
-      },
-      [playNext],
-    );
+    const onSelectClick = useCallback((index: number) => {
+      // 销毁旧的播放器实例
+      if (sdkRef.current) {
+        sdkRef.current.destroy();
+        sdkRef.current = undefined;
+      }
+
+      // 重置播放器状态
+      setPlayerReady(false);
+      setShowUnmuteBtn(false);
+
+      // 更新索引并滑动到指定位置
+      prevSwiperActiveRef.current = swiperActiveRef.current;
+      swiperActiveRef.current = index;
+      swiperRef.current?.slideTo(index, 0);
+      setActiveIndex(index);
+    }, []);
 
     useImperativeHandle(ref, () => ({
       onSelectClick,
       // Play after unlocking
       playLockVideo: () => {
         if (!refVip.current) return;
-        playNext(swiperActiveRef.current, true);
+
+        // 销毁旧的播放器实例
+        if (sdkRef.current) {
+          sdkRef.current.destroy();
+          sdkRef.current = undefined;
+        }
+
+        // 重置播放器状态
+        setPlayerReady(false);
+        setShowUnmuteBtn(false);
+
+        // 重置VIP状态并重新初始化播放器
+        refVip.current = false;
+        setShowSystemCover(false);
+        setActiveIndex(swiperActiveRef.current);
       },
     }));
 
@@ -525,6 +482,7 @@ const VideoSwiper = React.forwardRef<RefVideoSwiper, IVideoSwiperProps>(
         >
           {videoDataList?.length > 0 && (
             <Swiper
+              loop
               initialSlide={activeIndex}
               className={classNames(styles.mySwiper, { [styles.hidePlayer]: currentVideoData.vip })}
               direction="vertical"
