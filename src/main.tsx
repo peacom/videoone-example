@@ -14,7 +14,9 @@ window.sessionStorage.setItem('user_id', String(Math.floor(10000 + Math.random()
 VePlayer.prepare({
   appId: 597335, // Obtain from the video-on-demand console - VOD SDK - Application Management. Create one if not available.
   strategies: {
-    preload: true,
+    preload: {
+      preloadTime: 10,
+    },
     adaptRange: true,
   },
 });
