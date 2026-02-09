@@ -483,6 +483,7 @@ const VideoSwiper = React.forwardRef<RefVideoSwiper, IVideoSwiperProps>(
               initialSlide={activeIndex}
               className={classNames(styles.mySwiper, { [styles.hidePlayer]: currentVideoData.vip })}
               direction="vertical"
+              touchStartPreventDefault={false}
               onSwiper={swiper => (swiperRef.current = swiper)}
               onActiveIndexChange={onSlideChange}
             >

@@ -276,6 +276,7 @@ const TTShow: React.FC = () => {
             onSwiper={swiper => (refSwiper.current = swiper)}
             style={{ height: '100%' }}
             direction="vertical"
+            touchStartPreventDefault={false}
             preventClicksPropagation={false}
             loop={true}
             onSlideChange={swiper => {
