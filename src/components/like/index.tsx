@@ -70,6 +70,7 @@ const Like = React.forwardRef<IRef, IProps>((props, ref) => {
             <IconUnLike />
           </div>
         )}
+        1
       </div>
       <span>{isLike ? props.like + 1 : props.like}</span>
     </>
