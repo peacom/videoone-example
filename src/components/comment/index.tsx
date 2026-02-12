@@ -26,6 +26,7 @@ interface IProps {
   commentVisible: boolean;
   setCommentVisible: (value: boolean) => void;
 }
+const isDemo = window.location.href.includes('dramaDemo');
 
 const Comment: React.FC<IProps> = ({
   list: propList,
@@ -39,7 +40,6 @@ const Comment: React.FC<IProps> = ({
   const [likeMap, setLikeMap] = useState<Map<number, boolean>>(new Map());
   const [list, setList] = useState<IComment[]>(propList ?? []);
   const { getMountContainer } = useMountContainer();
-
   useEffect(() => {
     if (propList?.length > 0) {
       setList(propList);
@@ -93,15 +93,17 @@ const Comment: React.FC<IProps> = ({
             </div>
           ) : (
             <div className={styles.commentContent}>
-              <InputBar
-                handleEnter={val => {
-                  handleAddComment(val);
-                }}
-              />
-              {list.map(comment => {
+              {!isDemo && (
+                <InputBar
+                  handleEnter={val => {
+                    handleAddComment(val);
+                  }}
+                />
+              )}
+              {list.map((comment, index) => {
                 return (
                   <CommentItem
-                    key={comment.uid}
+                    key={index}
                     comment={comment}
                     clickDelete={() => {
                       Dialog.confirm({
@@ -152,7 +154,8 @@ const CommentItem = ({
           alt="avatar"
           className={styles.img}
           src={imgUrl(
-            '//p16-live-sg.ibyteimg.com/tos-alisg-i-j963mrpdmh/f91bdb13eb83960457760d4f0be0b1e8.png~tplv-j963mrpdmh-image.image',
+            comment.avatar ||
+              '//p16-live-sg.ibyteimg.com/tos-alisg-i-j963mrpdmh/f91bdb13eb83960457760d4f0be0b1e8.png~tplv-j963mrpdmh-image.image',
           )}
         />
       </div>
@@ -160,12 +163,14 @@ const CommentItem = ({
         <div className={styles.name}>{comment.name}</div>
         <div className={styles.content}>{comment.content}</div>
         <div className={styles.operation}>
-          <div className={styles.time}>{formatDateTime(new Date(comment.createTime))}</div>
-          <div className={styles.del} onClick={clickDelete}>
-            <Delete />
-            &nbsp;
-            <span>{translate('c_comment_del')}</span>
-          </div>
+          <div className={styles.time}>{formatDateTime(new Date(comment.createTime)).replace('2023', '2026')}</div>
+          {!isDemo && (
+            <div className={styles.del} onClick={clickDelete}>
+              <Delete />
+              &nbsp;
+              <span>{translate('c_comment_del')}</span>
+            </div>
+          )}
         </div>
       </div>
       <div className={cn(styles.like, { [styles.unLike]: !isLike })} onClick={clickLike}>

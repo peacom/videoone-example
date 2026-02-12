@@ -27,6 +27,7 @@ export default defineConfig({
   server: {
     host: '0.0.0.0',
     port: 8000,
+    open: '/videoone/',
   },
   build: {
     outDir: 'output',
@@ -42,7 +43,7 @@ export default defineConfig({
   },
   define: {
     __API_URL__: JSON.stringify(
-      isPPE || !isProd ? '//rtc-sg-test.bytedance.com/videoone' : '//videocloud.byteplusapi.com/videoone',
+      isPPE || !isProd ? 'https://rtc-sg-test.bytedance.com/videoone' : 'https://videocloud.byteplusapi.com/videoone',
     ),
   },
   resolve: {

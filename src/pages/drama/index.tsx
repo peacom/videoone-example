@@ -92,8 +92,8 @@ const DramaGround: React.FC = () => {
     <>
       <div className={classNames(styles.content, { [styles.isCssFullScreen]: isCssFullScreen })}>
         <Swiper
-          touchStartPreventDefault
           noSwipingSelector="xg-progress,.noSwipingClass"
+          touchStartPreventDefault={false}
           onSwiper={swiper => (swiperRef.current = swiper)}
           onActiveIndexChange={onSwiperChange}
           onTransitionEnd={() => setIsSliderMoving(false)}

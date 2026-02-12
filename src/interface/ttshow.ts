@@ -29,4 +29,5 @@ export interface IComment {
   uid: number;
   createTime: Date;
   like: number;
+  avatar?: string;
 }

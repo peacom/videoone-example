@@ -195,7 +195,7 @@ const VideoSwiper = React.forwardRef<RefVideoSwiper, IVideoSwiperProps>(
       (swiper: SwiperClass) => {
         if ((isFullScreen || isCssFullScreen) && !isPortrait) return;
         if (swiper.realIndex !== swiperActiveRef.current) {
-          console.log(swiper.realIndex, '>>>');
+          onChange(swiper.realIndex);
 
           // 销毁旧的播放器实例
           if (sdkRef.current) {
@@ -475,11 +475,8 @@ const VideoSwiper = React.forwardRef<RefVideoSwiper, IVideoSwiperProps>(
     }, []);
 
     return (
-      <div className={isChannel ? styles.recommendMain : styles.main}>
-        <div
-          className={classNames(styles.swiperContainer, isDemo ? 'swiper-no-swiping' : '')}
-          ref={wrapRef as React.MutableRefObject<HTMLDivElement>}
-        >
+      <div className={`${isChannel ? styles.recommendMain : styles.main} ${isDemo ? styles.isDemo : ''}`}>
+        <div className={classNames(styles.swiperContainer)} ref={wrapRef as React.MutableRefObject<HTMLDivElement>}>
           {videoDataList?.length > 0 && (
             <Swiper
               loop

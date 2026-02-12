@@ -38,6 +38,7 @@ const SliderItem: React.FC<ISliderItemProps> = ({
 }) => {
   const coverUrl = data?.videoModel?.PosterUrl ?? data?.cover_url;
 
+  const isDemo = window.location.pathname.includes('dramaDemo');
   // Load two episodes from the current episode to reduce the number of DOMs
   const shouldRenderContent = useMemo(() => Math.abs(activeIndex - index) <= 2, [activeIndex, index]);
 
@@ -51,7 +52,7 @@ const SliderItem: React.FC<ISliderItemProps> = ({
         [styles.isIOS]: os.isIos,
       })}
     >
-      {shouldRenderContent && (
+      {(shouldRenderContent || isDemo) && (
         <>
           <div className={styles.poster}>
             <Image src={imgUrl(coverUrl)} alt={data.name} />
