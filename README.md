@@ -1,3 +1,4 @@
+# Quick Start
 ## Step 1: Install Dependencies
 In the project root directory, run `pnpm install --registry=https://registry.npmmirror.com` to install dependencies (recommend using [pnpm](https://pnpm.io/installation)).
 
@@ -20,3 +21,7 @@ export default defineConfig({
   },
 });
 ```
+
+# Security and privacy
+This project takes security seriously.
+For vulnerability reporting and supported versions, see [SECURITY.md](SECURITY.md)
