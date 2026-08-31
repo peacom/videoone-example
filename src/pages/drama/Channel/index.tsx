@@ -173,7 +173,7 @@ const Channel: React.FC<ChannelProps> = ({
     };
   }, []);
 
-  if (loading) {
+  if (loading || videoDataList.length === 0) {
     return (
       <div className={styles.loadingWrapper}>
         <Loading />
