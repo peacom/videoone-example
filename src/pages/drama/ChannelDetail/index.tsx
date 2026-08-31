@@ -148,7 +148,7 @@ function ChannelDetail() {
   const [iframeData, setIframeData] = useState<IDramaDetailListItem['video_meta'][] | null>(null);
   const list = iframeData ? iframeData : detailList.filter(item => !item.vip);
 
-  let loading;
+  let loading: boolean | undefined;
   if (!isDemo) {
     const { loading: _loading } = useDramaData(urlState);
     loading = _loading;
