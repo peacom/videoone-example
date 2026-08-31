@@ -275,6 +275,11 @@ function ChannelDetail() {
           vid: current.vid,
         },
       });
+    } else if (!loading) {
+      // Data has arrived but there's no accessible episode (e.g. every
+      // episode is VIP-locked and none unlocked yet) - don't leave the
+      // loading toast spinning forever.
+      toastRef?.current?.close();
     } else {
       toastRef.current = Toast.show({
         icon: 'loading',
@@ -282,7 +287,7 @@ function ChannelDetail() {
         duration: 0,
       });
     }
-  }, [current]);
+  }, [current, loading]);
 
   const getLockData = (lockData: IDramaDetailListItem['video_meta'][]) => {
     executeGetDramaDetail({
